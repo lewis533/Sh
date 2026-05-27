@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Share</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--accent:#7c6cfc;--accent2:#fc6c8f;--success:#4ade80;--danger:#f87171;--radius:16px;}
+[data-theme="dark"]{--bg:#0a0a0f;--surface:#13131a;--surface2:#1c1c27;--border:#2a2a3a;--text:#f0f0f8;--muted:#7070a0;}
+[data-theme="light"]{--bg:#f2f2f7;--surface:#ffffff;--surface2:#f0f0f5;--border:#e0e0eb;--text:#0a0a1a;--muted:#8080a0;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;}
+#auth-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 30% 20%,#1a1040 0%,transparent 60%),radial-gradient(ellipse at 80% 80%,#200d20 0%,transparent 60%),#0a0a0f;}
+.auth-card{text-align:center;padding:44px 36px;background:#13131a;border:1px solid #2a2a3a;border-radius:28px;max-width:400px;width:92%;}
+.logo{font-family:'Syne',sans-serif;font-size:2.8rem;font-weight:800;margin-bottom:8px;}
+.logo span{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.auth-sub{color:#7070a0;font-size:0.93rem;margin-bottom:24px;}
+.auth-tabs{display:flex;margin-bottom:22px;background:#1c1c27;border-radius:12px;padding:3px;}
+.auth-tab{flex:1;padding:9px;border:none;background:none;color:#7070a0;font-family:'DM Sans',sans-serif;font-size:0.88rem;cursor:pointer;border-radius:10px;transition:all 0.2s;}
+.auth-tab.active{background:#2a2a3a;color:#f0f0f8;font-weight:600;}
+.auth-input{width:100%;background:#1c1c27;border:1.5px solid #2a2a3a;border-radius:var(--radius);padding:13px 16px;color:#f0f0f8;font-family:'DM Sans',sans-serif;font-size:1rem;outline:none;margin-bottom:10px;}
+.auth-input:focus{border-color:var(--accent);}
+.btn-auth{width:100%;padding:14px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:white;border-radius:var(--radius);font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;cursor:pointer;margin-top:4px;}
+.btn-auth:disabled{opacity:0.5;cursor:not-allowed;}
+.auth-err{color:#f87171;font-size:0.8rem;margin-bottom:8px;min-height:18px;text-align:left;}
+#app{display:none;flex-direction:column;min-height:100vh;}
+.topnav{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:1px solid var(--border);padding:0 14px;height:54px;display:flex;align-items:center;justify-content:space-between;}
+.nav-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.3rem;}
+.nav-logo span{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.main{flex:1;padding:12px 13px 70px;max-width:640px;margin:0 auto;width:100%;}
+.page{display:none;}
+.page.active{display:block;}
+.page-title{font-family:'Syne',sans-serif;font-size:1.35rem;font-weight:700;margin-bottom:14px;}
+.botnav{position:fixed;bottom:0;left:0;right:0;background:var(--bg);border-top:1px solid var(--border);display:flex;height:58px;}
+.tab-btn{flex:1;background:none;border:none;color:var(--muted);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;font-size:0.6rem;font-family:'DM Sans',sans-serif;}
+.tab-btn.active{color:var(--accent);}
+.tab-btn svg{width:20px;height:20px;}
+.empty-state{text-align:center;padding:44px 18px;color:var(--muted);}
+.empty-state p{font-size:0.88rem;line-height:1.6;}
+.toast{position:fixed;bottom:70px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--surface2);border:1px solid var(--border);padding:10px 17px;border-radius:12px;font-size:0.82rem;z-index:9999;opacity:0;transition:all 0.3s;pointer-events:none;color:var(--text);}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.toast.success{border-color:var(--success);color:var(--success);}
+.toast.error{border-color:var(--danger);color:var(--danger);}
+.note{background:#1c1c27;border:1px solid #2a2a3a;border-radius:12px;padding:14px 16px;font-size:0.82rem;color:#7070a0;margin-top:18px;line-height:1.6;}
+.note strong{color:#f0f0f8;}
+</style>
+</head>
+<body>
+
+<div id="auth-screen">
+  <div class="auth-card">
+    <div class="logo"><span>Share</span></div>
+    <p class="auth-sub">Share moments with friends, chat privately.</p>
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-login" onclick="switchTab('login')">Sign In</button>
+      <button class="auth-tab" id="tab-signup" onclick="switchTab('signup')">Sign Up</button>
+    </div>
+    <div id="auth-err" class="auth-err"></div>
+    <div id="login-form">
+      <input class="auth-input" id="login-username" type="text" placeholder="Username">
+      <input class="auth-input" id="login-password" type="password" placeholder="Password">
+      <button class="btn-auth" id="btn-login" onclick="doLogin()">Sign In</button>
+    </div>
+    <div id="signup-form" style="display:none">
+      <input class="auth-input" id="signup-username" type="text" placeholder="Choose a username">
+      <input class="auth-input" id="signup-password" type="password" placeholder="Password (min 6 chars)">
+      <input class="auth-input" id="signup-password2" type="password" placeholder="Confirm password">
+      <button class="btn-auth" id="btn-signup" onclick="doSignup()">Create Account</button>
+    </div>
+    <div class="note"><strong>Note:</strong> This preview works in Claude chat. To use with real accounts, deploy to Vercel — Firebase auth requires a hosted domain.</div>
+  </div>
+</div>
+
+<div id="app">
+  <nav class="topnav">
+    <div class="nav-logo"><span>Share</span></div>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <button onclick="signOut()" style="background:none;border:1px solid var(--border);color:var(--muted);padding:5px 10px;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:0.78rem;">Sign Out</button>
+    </div>
+  </nav>
+  <div class="main">
+    <div class="page active" id="page-feed">
+      <div class="page-title">Feed</div>
+      <div class="empty-state"><p>Welcome, <strong id="welcome-name"></strong>!<br><br>You're signed in. On Vercel, the full app loads here with posts, stories, messages and more.</p></div>
+    </div>
+    <div class="page" id="page-people"><div class="page-title">People</div></div>
+    <div class="page" id="page-dms"><div class="page-title">Messages</div></div>
+    <div class="page" id="page-profile"><div class="page-title">Profile</div></div>
+  </div>
+  <nav class="botnav">
+    <button class="tab-btn active" onclick="showTab('feed',this)"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>Feed</button>
+    <button class="tab-btn" onclick="showTab('people',this)"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>People</button>
+    <button class="tab-btn" onclick="showTab('dms',this)"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>Messages</button>
+    <button class="tab-btn" onclick="showTab('profile',this)"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>Profile</button>
+  </nav>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Pure JS auth - no Firebase needed for preview ──
+var USERS_KEY = 'share_users';
+var SESSION_KEY = 'share_session';
+
+function getUsers(){try{return JSON.parse(localStorage.getItem(USERS_KEY)||'{}');}catch(e){return {};}}
+function saveUsers(u){localStorage.setItem(USERS_KEY,JSON.stringify(u));}
+function getSession(){try{return JSON.parse(localStorage.getItem(SESSION_KEY)||'null');}catch(e){return null;}}
+function saveSession(u){localStorage.setItem(SESSION_KEY,JSON.stringify(u));}
+
+function T(msg,type){var t=document.getElementById('toast');t.textContent=msg;t.className='toast show '+(type||'');setTimeout(function(){t.className='toast';},3000);}
+
+function switchTab(tab){
+  document.getElementById('login-form').style.display=tab==='login'?'block':'none';
+  document.getElementById('signup-form').style.display=tab==='signup'?'block':'none';
+  document.getElementById('tab-login').className='auth-tab'+(tab==='login'?' active':'');
+  document.getElementById('tab-signup').className='auth-tab'+(tab==='signup'?' active':'');
+  document.getElementById('auth-err').textContent='';
+}
+
+function doLogin(){
+  var username=document.getElementById('login-username').value.trim().toLowerCase();
+  var pass=document.getElementById('login-password').value;
+  document.getElementById('auth-err').textContent='';
+  if(!username||!pass){document.getElementById('auth-err').textContent='Enter username and password';return;}
+  var users=getUsers();
+  if(!users[username]||users[username].password!==pass){document.getElementById('auth-err').textContent='Wrong username or password';return;}
+  saveSession(users[username]);
+  launchApp(users[username]);
+}
+
+function doSignup(){
+  var username=document.getElementById('signup-username').value.trim().toLowerCase();
+  var pass=document.getElementById('signup-password').value;
+  var pass2=document.getElementById('signup-password2').value;
+  document.getElementById('auth-err').textContent='';
+  if(username.length<2){document.getElementById('auth-err').textContent='Username must be at least 2 characters';return;}
+  if(/\s/.test(username)){document.getElementById('auth-err').textContent='No spaces in username';return;}
+  if(pass.length<6){document.getElementById('auth-err').textContent='Password must be at least 6 characters';return;}
+  if(pass!==pass2){document.getElementById('auth-err').textContent='Passwords do not match';return;}
+  var users=getUsers();
+  if(users[username]){document.getElementById('auth-err').textContent='Username already taken';return;}
+  var user={uid:'user_'+Date.now(),username:username,displayName:username,password:pass,photoURL:''};
+  users[username]=user;
+  saveUsers(users);
+  saveSession(user);
+  launchApp(user);
+}
+
+function launchApp(user){
+  document.getElementById('auth-screen').style.display='none';
+  document.getElementById('app').style.display='flex';
+  document.getElementById('welcome-name').textContent=user.displayName;
+  T('Welcome, '+user.displayName+'!','success');
+}
+
+function signOut(){
+  localStorage.removeItem(SESSION_KEY);
+  document.getElementById('app').style.display='none';
+  document.getElementById('auth-screen').style.display='flex';
+  document.getElementById('login-username').value='';
+  document.getElementById('login-password').value='';
+  switchTab('login');
+}
+
+function showTab(tab,btn){
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
+  document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active');});
+  document.getElementById('page-'+tab).classList.add('active');
+  if(btn)btn.classList.add('active');
+}
+
+// Check for existing session
+var session=getSession();
+if(session){launchApp(session);}
+</script>
+
+<!-- Firebase (only used when deployed to Vercel, not in preview) -->
+<script>
+// When running on actual domain, load Firebase and override auth functions
+if(window.location.hostname !== 'localhost' && !window.location.hostname.includes('claude') && window.location.protocol !== 'about:') {
+  var s1=document.createElement('script');s1.src='https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js';
+  var s2=document.createElement('script');s2.src='https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js';
+  var s3=document.createElement('script');s3.src='https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js';
+  s3.onload=function(){
+    try{
+      firebase.initializeApp({apiKey:"AIzaSyBQaBmm1Ydr8rx2KWop8cQrOn4n30hAixQ",authDomain:"lewi-b41e7.firebaseapp.com",projectId:"lewi-b41e7",storageBucket:"lewi-b41e7.firebasestorage.app",messagingSenderId:"411640151338",appId:"1:411640151338:web:21b6e8e059b20d69163253"});
+      var auth=firebase.auth(),db=firebase.firestore();
+      auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+      function uToEmail(u){return u.toLowerCase().replace(/[^a-z0-9]/g,'')+'@share.app';}
+      // Override login with real Firebase
+      window.doLogin=function(){
+        var username=document.getElementById('login-username').value.trim();
+        var pass=document.getElementById('login-password').value;
+        document.getElementById('auth-err').textContent='';
+        if(!username||!pass){document.getElementById('auth-err').textContent='Enter username and password';return;}
+        var btn=document.getElementById('btn-login');btn.disabled=true;btn.textContent='Signing in...';
+        auth.signInWithEmailAndPassword(uToEmail(username),pass).catch(function(e){
+          document.getElementById('auth-err').textContent='Wrong username or password';
+          btn.disabled=false;btn.textContent='Sign In';
+        });
+      };
+      // Override signup with real Firebase
+      window.doSignup=function(){
+        var username=document.getElementById('signup-username').value.trim();
+        var pass=document.getElementById('signup-password').value;
+        var pass2=document.getElementById('signup-password2').value;
+        document.getElementById('auth-err').textContent='';
+        if(username.length<2){document.getElementById('auth-err').textContent='Username must be at least 2 characters';return;}
+        if(/\s/.test(username)){document.getElementById('auth-err').textContent='No spaces in username';return;}
+        if(pass.length<6){document.getElementById('auth-err').textContent='Password must be at least 6 characters';return;}
+        if(pass!==pass2){document.getElementById('auth-err').textContent='Passwords do not match';return;}
+        var btn=document.getElementById('btn-signup');btn.disabled=true;btn.textContent='Creating...';
+        var email=uToEmail(username);
+        db.collection('users').where('username','==',username).get().then(function(existing){
+          if(!existing.empty){document.getElementById('auth-err').textContent='Username already taken';btn.disabled=false;btn.textContent='Create Account';return;}
+          return auth.createUserWithEmailAndPassword(email,pass).then(function(cred){
+            return db.collection('users').doc(cred.user.uid).set({uid:cred.user.uid,username:username,displayName:username,email:email,photoURL:'',updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+          });
+        }).catch(function(e){
+          document.getElementById('auth-err').textContent=e.code==='auth/email-already-in-use'?'Username already taken':e.message;
+          btn.disabled=false;btn.textContent='Create Account';
+        });
+      };
+      auth.onAuthStateChanged(function(u){
+        if(u){
+          db.collection('users').doc(u.uid).get().then(function(snap){
+            if(snap.exists){launchApp(snap.data());}
+          });
+        }
+      });
+    }catch(e){console.log('Firebase init error',e);}
+  };
+  document.head.appendChild(s1);document.head.appendChild(s2);document.head.appendChild(s3);
+}
+</script>
+</body>
+  </html>
